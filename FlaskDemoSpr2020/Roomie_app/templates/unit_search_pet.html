@@ -1,8 +1,110 @@
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Roomio - Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        input[type="submit"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 20px; /* Increased margin for better separation */
+            border: 1px solid #ccc; /* Added border for each unit */
+            padding: 15px; /* Added padding for better spacing */
+            border-radius: 5px;
+        }
+        .comment-section {
+            margin-top: 20px;
+        }
+        .comment {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .comment .username {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .comment .rating {
+            color: #28a745;
+            font-style: italic;
+        }
+        .back-link {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        .submit-comment {
+            display: block;
+            margin-top: 20px;
+            color: white;
+            background-color: #007bff;
+            text-decoration: none;  
+            border-radius: 5px;
+            border: none;
+            padding: 10px;
+        }
+        .comment_text {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>Welcome {{ username }}</h1>
@@ -19,23 +121,83 @@
         <h2>Search Results:</h2>
         <ul>
             {% for unit in units %}
-                <li>Unit ID: {{ unit.0 }}</li>
-                <li>Company Name: {{ unit.1 }}</li>
-                <li>Building Name: {{ unit.2 }}</li>
-                <li>Unit Number: {{ unit.3 }}</li>
-                <li>Monthly Rent: {{ unit.4 }}</li>
-                <li>Square Footage: {{ unit.5 }}</li>
-                <li>Available Date for Move-in: {{ unit.6 }}</li>
-                <li>Your pet Allowed: {{ unit.7 }}</li>
-                <li>Pet Registration Fee: {{ unit.8 }}</li>
-                <li>Pet Monthly Fee: {{ unit.9 }}</li>
-                <br>
+                <li>
+                    <strong>Unit ID:</strong> {{ unit.0 }}<br>
+                    <strong>Company Name:</strong> {{ unit.1 }}<br>
+                    <strong>Building Name:</strong> {{ unit.2 }}<br>
+                    <strong>Unit Number:</strong> {{ unit.3 }}<br>
+                    <strong>Monthly Rent:</strong> {{ unit.4 }}<br>
+                    <strong>Square Footage:</strong> {{ unit.5 }}<br>
+                    <strong>Available Date for Move-in:</strong> {{ unit.6 }}<br>
+                    <strong>Average Rent for similar area:</strong> {{ unit.10 }}<br>
+                    <strong>Your pet Allowed:</strong> {{ unit.7 }}<br>
+                    <strong>Pet Registration Fee:</strong> {{ unit.8 }}<br>
+                    <strong>Pet Monthly Fee:</strong> {{ unit.9 }}<br><br>
+                    <form method="POST" action="{{ url_for('add_to_favorites') }}">
+                        <input type="hidden" name="unit_id" value="{{ unit[0] }}">
+                        <input type="submit" value="Add to Favorites">
+                    </form>
+                    <form method="GET" action="{{ url_for('post_interest') }}">
+                        <input type="hidden" name="unit_id" value="{{ unit[0] }}">
+                        <input type="submit" value="Show Interest">
+                    </form>
+                    <form method="GET" action="/search_interest">
+                        <input type="hidden" name="unit_number" value="{{ unit[3] }}">
+                        <input type="submit" value="View Interests">
+                    </form>
+                    <form method="GET" action="/unit_building_info">
+                        <input type="hidden" name="unit_id" value="{{ unit[0] }}">
+                        <input type="submit" value="Details">
+                    </form>
+                    <div class="comment-section">
+                        <h4>Comments and Ratings:</h4>
+                        <ul>
+                            {% for comment in unit_comments[unit[0]] %}
+                            <li class="comment">
+                                <span class="username">{{ comment['username'] }}</span> - {{ comment['CommentText'] }}
+                                <span class="rating">(Rating: {{ comment['Rating'] }})</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <form id="commentForm-{{ unit[0] }}" method="POST" action="{{ url_for('add_comment') }}">
+                        <!-- Hidden inputs for form data -->
+                        <label for="comment_text">Comment:</label><br>
+                        <textarea id="comment_text-{{ unit[0] }}" name="comment_text" required></textarea><br>
+                        <label for="rating">Rating (1-5):</label>
+                        <input type="number" id="rating-{{ unit[0] }}" name="rating" min="1" max="5" required><br>
+                        <input type="button" class="submit-comment" value="Submit Comment" onclick="submitComment({{ unit[0] }})">
+                    </form>
+                </li>
             {% endfor %}
         </ul>
     {% else %}
         <p>{{ error_message }}</p>
     {% endif %}
 
-    <a href="{{ url_for('home') }}">Back to Home</a>
+    <button class="back-link" onclick="window.location.href='{{ url_for('home') }}'">Back to Home</button>
 </body>
+<script>
+    function submitComment(unitId) {
+        var form = document.getElementById('commentForm-' + unitId);
+        var commentText = document.getElementById('comment_text-' + unitId).value;
+        var rating = document.getElementById('rating-' + unitId).value;
+
+        // Perform AJAX request to submit comment data
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.getAttribute('action'), true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    // Reload the page to update comments
+                    location.reload();
+                } else {
+                    console.error('Error submitting comment.');
+                }
+            }
+        };
+        xhr.send('unit_rent_id=' + unitId + '&comment_text=' + encodeURIComponent(commentText) + '&rating=' + rating);
+    }
+</script>
 </html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search and Edit Pets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0 20px; /* Added margin to the left and right sides */
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .edit-form {
+            display: none; /* Initially hide the edit form */
+        }
+        input[type="text"] {
+            width: 100px; /* Adjust width as needed */
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .back-button { /* Added styling for the back button */
+            display: block;
+            margin-top: 20px;
+            padding: 8px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        a {
+            display: block;
+            text-align: center;
+            color: #007bff;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search and Edit Pets</h1>
+
+    {% if error_message %}
+    <div style="color: red; margin-bottom: 10px;">{{ error_message }}</div>
+    {% endif %}
+
+    {% if success_message %}
+    <div style="color: green; margin-bottom: 10px;">{{ success_message }}</div>
+    {% endif %}
+
+    <ul>
+        {% for pet in pets %}
+        <li>
+            {{ pet.0 }} - {{ pet.1 }} - {{ pet.2 }}
+            <a href="#" class="edit-link" onclick="toggleEditForm('{{ pet.0 }}')">Edit</a>
+            <form id="form-{{ pet.0 }}" class="edit-form" method="POST" action="{{ url_for('edit_pet') }}">
+                <input type="hidden" name="pet_name" value="{{ pet.0 }}">
+                <input type="text" name="pet_type" value="{{ pet.1 }}" required>
+                <input type="text" name="pet_size" value="{{ pet.2 }}" required>
+                <input type="submit" value="Update">
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('home') }}" class="back-button">Back to Home</a>
+
+    <script>
+        function toggleEditForm(petName) {
+            var form = document.getElementById('form-' + petName);
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
